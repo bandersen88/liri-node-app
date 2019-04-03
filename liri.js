@@ -23,7 +23,7 @@ inquirer
     {
         type: "list",
         message: "What would you like to do?",
-        choices: ["Check if a band is in town", "Look up song info", "Look up movie info","Surprise me"],
+        choices: ["Check if a band is in town", "Look up song info", "Look up movie info","Surprise Me"],
         name: "action"
       }
   ])
@@ -35,14 +35,12 @@ inquirer
             break;
             case "Look up song info":
                 spotifyAPI();
-            //TODO: Spotify API
-                // console.log("Look up song info");
             break;
             case "Look up movie info":
-            // TODO: OMDB API
+                omdbAPI();
             break;
             case "Surprise Me":
-            // Spotify API using random.txt
+                surpriseMe();
             break;
         }
       });
@@ -58,22 +56,31 @@ function bandsInTown() {
             }
         ])
         .then(function(inquirerResponse) {
-            //TODO: Clean up output
+            
             axios
             .get("https://rest.bandsintown.com/artists/" + inquirerResponse.artist + "/events?app_id=codingbootcamp")
             .then(function(response) {
                 console.log(response);
-                console.log("At least I'm here");
+                var data = response.data;
+                if (data == "\n{warn=Not found}\n") {
+                    // Artist not found
+                    console.log("Artist not found");
+                } else if (data.length == 0) {
+                    // No planned concerts
+                    console.log("No concerts are planned for this artist");
+                } else {
+                    data.forEach(function(element){
+                        console.log(moment(element.datetime).format("MM/DD/YYY") + '\n');
+                    })
+                }
             })
             .catch(function(error) {
-                console.log("I'm in there error section");
+                console.log(error);
             });
         });
 };
 
 function spotifyAPI(){
-    //TODO: Consult the node-spotify-api npm package for the search functions for spotify
-    console.log("Inside Spotify API");
 
     inquirer
     .prompt([
@@ -98,8 +105,6 @@ function spotifyAPI(){
                 return console.log('Error occurred: ' + err);
             }
 
-            //Jenky, I know.  But spotify packages for single parameter query, so 
-            //here's my best guess how to find the Ace of Base "The Sign"
             if(!findAceOfBase){
                 printSpotifyResults(0, data);
             } else {
@@ -119,21 +124,94 @@ function findAceOfBaseIndex(element) {
 }
 
 function printSpotifyResults(i, data) {
-    // console.log(JSON.stringify(data));
     console.log("Artist: " + data.tracks.items[i].album.artists[0].name + '\n' +
                 "Track Name: " + data.tracks.items[i].name + '\n' +
                 "Link to track: " + data.tracks.items[i].album.artists[0].external_urls.spotify + '\n' +
                 "Album: " + data.tracks.items[i].album.name);
 }
 
-
-
 function omdbAPI() {
-    console.log("Inside OMDB API");
+    
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                messsage: "What movie do you want to lookup?",
+                name: "title"
+            }
+        ])
+        .then(function(res){
+            var titleLookup = res.title;
+            if(titleLookup.trim() === ""){
+                titleLookup = "Mr. Nobody";
+            }
+            axios.get('https://www.omdbapi.com/?apikey=trilogy', 
+            {
+                // port: 8080,
+                params: {
+                  t: titleLookup
+                }
+              })
+              .then(function (response) {
+                console.log(response);
+
+                var index = response.data.Ratings.findIndex(findRTRating)
+                var rottenTomatoesRating = ""
+
+                if (index === -1){
+                    rottenTomatoesRating = "Not Available";
+                } else {
+                    rottenTomatoesRating = response.data.Ratings[index].Value;
+                }
+
+                console.log("Title: " + response.data.Title + '\n' 
+                            + "Year: " + response.data.Year + '\n' 
+                            + "IMDB Rating: " + response.data.imdbRating + '\n'
+                            + "Rotten Tomatoes Rating: " + rottenTomatoesRating + '\n'
+                            + "Country: " + response.data.Country + '\n'
+                            + "Language: " + response.data.Language + '\n'
+                            + "Plot: " + response.data.Plot + '\n' 
+                            + "Actors: " + response.data.Actors + '\n' 
+                            );
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+
+        })
 };
 
+function findRTRating(element) {
+    if (element.Source === "Rotten Tomatoes") {
+        return element;
+    }
+}
+
 function surpriseMe() {
-    console.log("Inside Surprise Me");
+    var filename = "random.txt";
+    var dataArray = [];
+
+    fs.readFile(filename, 'utf8', function(err, data) {
+        if (err) throw err;
+        console.log('OK: ' + filename);
+        console.log(data)
+        dataArray = data.split(',');
+        dataArray.forEach(function(element){
+            element.replace(/['"]+/g, '');
+        })
+        console.log(dataArray[0]);
+
+        //TODO: add callback or promise here
+        if(dataArray[0] === "spotify-this-song") {
+          spotify.search({type: 'track', query: dataArray[1]}, function(err, data){
+              if(err) {
+                  return console.log('Error occurred: ' + err);
+              }
+              printSpotifyResults(0, data);
+          })
+        }
+      });
+
 };
 // Helper function that appends to log.txt, gets called in all response sections   
 
