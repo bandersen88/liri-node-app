@@ -85,40 +85,48 @@ function spotifyAPI(){
     ])
     .then(function(res){
 
-        //TODO: trim response and set to default if no characters provided
+        var trackLookup = res.trackName;
+        var findAceOfBase = false;
 
-        spotify.search({type: 'track', query: res.trackName}, function(err, data){
+        if (res.trackName.trim() === "") {
+            trackLookup = "The Sign";
+            findAceOfBase = true;
+        }
+
+        spotify.search({type: 'track', query: trackLookup}, function(err, data){
             if(err) {
                 return console.log('Error occurred: ' + err);
             }
 
-            //TODO: console log Artist, song name, preview link from spotify, album
-            console.log("Artist: " + data.tracks.items[0].album.artists[0].name);
-            console.log("Track Name: " + data.tracks.items[0].name);
-            console.log("Link to track: " + data.tracks.items[0].album.artists[0].external_urls.spotify);
-            console.log("Album: " + data.tracks.items[0].album.name);
+            //Jenky, I know.  But spotify packages for single parameter query, so 
+            //here's my best guess how to find the Ace of Base "The Sign"
+            if(!findAceOfBase){
+                printSpotifyResults(0, data);
+            } else {
+                var index = data.tracks.items.findIndex(findAceOfBaseIndex);
+                printSpotifyResults(index, data);
+            }
+
+            
         })
     })
-
-    // spotify.search({ type: 'track', query: 'All the Small Things' }, function(err, data) {
-    //     if (err) {
-    //       return console.log('Error occurred: ' + err);
-    //     }
-       
-    //   console.log(data);
-
-//     * This will show the following information about the song in your terminal/bash window
-
-//      * Artist(s)
-
-//      * The song's name
-
-//      * A preview link of the song from Spotify
-
-//      * The album that the song is from
-
-//    * If no song is provided then your program will default to "The Sign" by Ace of Base.
 };
+
+function findAceOfBaseIndex(element) {
+    if(element.album.artists[0].name === "Ace of Base"){
+        return element;
+    }
+}
+
+function printSpotifyResults(i, data) {
+    // console.log(JSON.stringify(data));
+    console.log("Artist: " + data.tracks.items[i].album.artists[0].name + '\n' +
+                "Track Name: " + data.tracks.items[i].name + '\n' +
+                "Link to track: " + data.tracks.items[i].album.artists[0].external_urls.spotify + '\n' +
+                "Album: " + data.tracks.items[i].album.name);
+}
+
+
 
 function omdbAPI() {
     console.log("Inside OMDB API");
