@@ -9,12 +9,13 @@ var moment = require("moment");
 var inquirer = require("inquirer");
 var Promise = require('promise');
 
-console.log(keys);
+// console.log(keys);
 
 
 var spotify = new Spotify(keys.spotify);
+var logQueue = [];
 
-console.log(spotify);
+// console.log(spotify);
 
 
 inquirer
@@ -60,7 +61,7 @@ function bandsInTown() {
             axios
             .get("https://rest.bandsintown.com/artists/" + inquirerResponse.artist + "/events?app_id=codingbootcamp")
             .then(function(response) {
-                console.log(response);
+                // console.log(response);
                 var data = response.data;
                 if (data == "\n{warn=Not found}\n") {
                     // Artist not found
@@ -70,7 +71,7 @@ function bandsInTown() {
                     console.log("No concerts are planned for this artist");
                 } else {
                     data.forEach(function(element){
-                        console.log(moment(element.datetime).format("MM/DD/YYY") + '\n');
+                        console.log(moment(element.datetime).format("MM/DD/YYY"));
                     })
                 }
             })
@@ -153,8 +154,10 @@ function omdbAPI() {
                 }
               })
               .then(function (response) {
-                console.log(response);
+                // console.log(response);
+                // console.log(response.data.Response);
 
+                if(response.data.Response === "True"){
                 var index = response.data.Ratings.findIndex(findRTRating)
                 var rottenTomatoesRating = ""
 
@@ -173,7 +176,24 @@ function omdbAPI() {
                             + "Plot: " + response.data.Plot + '\n' 
                             + "Actors: " + response.data.Actors + '\n' 
                             );
+                
+                logQueue.push("Title: " + response.data.Title);
+                logQueue.push("Year: " + response.data.Year);
+                logQueue.push("IMDB Rating: " + response.data.imdbRating);
+                logQueue.push("Rotten Tomatoes Rating: " + rottenTomatoesRating);
+                logQueue.push("Country: " + response.data.Country);
+                logQueue.push("Language: " + response.data.Language);
+                logQueue.push("Plot: " + response.data.Plot);
+                logQueue.push("Actors: " + response.data.Actors);
+                writeToLog();
+                } else {
+                    console.log("Movie not Found");
+                    console.log(response.data);
+                }
+
               })
+
+              
               .catch(function (error) {
                 console.log(error);
               });
@@ -213,5 +233,15 @@ function surpriseMe() {
       });
 
 };
-// Helper function that appends to log.txt, gets called in all response sections   
+
+function writeToLog() {
+    // console.log("In Write to Log");
+    logQueue.forEach(function(element){
+        fs.appendFile("log.txt", element + "\n", function (err) {
+            if (err) throw err;
+        });
+    })
+
+    logQueue = [];
+}
 
