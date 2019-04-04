@@ -20,7 +20,8 @@ Step 2) Select which of the 4 commands you want to execute, using the arrow keys
     1. Return Concert Dates from API call to the *Bands in Town* API
     ![Concert Dates Returned](images/5-concert_return.jpg)
 1. Lookup Song Information off Spotify
-    1. Select *Look up song info*
+    1. Select *Look up song info* '/n'
+
     ![Lookup song info](images/3-lookup_song.jpg)
     
     1. Return Artist, Track Name, Spotify Link, and Album Name
@@ -40,4 +41,3 @@ Step 2) Select which of the 4 commands you want to execute, using the arrow keys
 1. Surprise Me - Let the app decide what to do
     1. Call the command in the random.txt file (currently a spotify call) with the data in the random.txt file
     ![surprise me](images/10-surprise_me.jpg)
-    
