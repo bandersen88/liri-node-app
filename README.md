@@ -14,8 +14,8 @@ Step 2) Select which of the 4 commands you want to execute, using the arrow keys
 ![Select a command](images/1-choose_command.jpg)
 
 1. Lookup Concert Dates
-    1. Select *Check if a band is in town*  
-    ![Lookup Dates for A Band](images/2-selecct_band.jpg)
+    1. Select *Check if a band is in town*
+    ![Lookup Dates for A Band](images/2-select_band.jpg)
 
     1. Return Concert Dates from API call to the *Bands in Town* API
     ![Concert Dates Returned](images/5-concert_return.jpg)
